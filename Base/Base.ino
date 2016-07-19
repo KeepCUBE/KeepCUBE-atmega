@@ -4,8 +4,8 @@
 #include "BMP280.h"
 #include <Wire.h>
 
-#define temperature 1  // BMP(temperature); // vrati teplotu
-#define pressure    2  // BMP(pressure); // vrati tlak
+#define temperature 1  // BMP(temperature); // return temperature
+#define pressure    2  // BMP(pressure); // return pressure
 
 
 #define upPin    6
@@ -14,20 +14,20 @@
 #define backPin  8
 
 
-//menu piny
-int klavesa;
-int mZobrazeny = 1;
+//menu pins
+int key;
+int mShown = 1;
 int keyPressed = 0;
-int16_t mPozice = 0;
+int16_t mPosition = 0;
 int mFlip = 0;
-bool mZacatek;
+bool mStart;
 
 uint16_t refreshCount = 0;
 
 uint16_t rgb[4];
 int mState = 0;
 
-//definice nazvu polozek v seznamu
+//Naming menu items
 String mChar[] = {
   "1>Show IP adress",
   "2>Set color     ",
@@ -37,12 +37,12 @@ String mChar[] = {
   "6>Restart       "
 };
 
-//zjisteni poctu polozek v seznamu
-int mPocet = (sizeof(mChar) / sizeof(mChar[0]));
+//Count menu items
+int mItemCount = (sizeof(mChar) / sizeof(mChar[0]));
 
 
-LiquidCrystal_I2C lcd(0x3F, 16, 2);  //pro i2c
-//LiquidCrystal lcd(RS, RW, EN, D4, D5, D6, D7);  //pro normalni displej
+LiquidCrystal_I2C lcd(0x3F, 16, 2);  //I2C LCD
+//LiquidCrystal lcd(RS, RW, EN, D4, D5, D6, D7);  //Classic LCD
 
 
 #define R_led_pin 9
@@ -58,12 +58,12 @@ int Gled = 0;
 int Bled = 0;
 String LED_address;
 
-const int HTU_ADRESA = 0x40;
-const int HTU_TEPLOTA = 0xE3;
-const int HTU_VLHKOST = 0xE5;
+const int HTU_ADDRESS = 0x40;
+const int HTU_TEMP = 0xE3;
+const int HTU_HUMIDITY = 0xE5;
 
-double BMP_TEPLOTA;
-double BMP_TLAK;
+double BMP_TEMP;
+double BMP_PRESSURE;
 
 String dsc;
 String codeToSend;
@@ -88,7 +88,7 @@ byte degree[8] = {
 void setup()
 {
    /*
-    ////////piny pro lcd////////
+    ////////Pinds for classic LCD////////
     pinMode(54, OUTPUT);      //
     pinMode(55, OUTPUT);      //
     pinMode(67, OUTPUT);      //
@@ -125,11 +125,11 @@ void setup()
   Wire.begin();
   if (!bmp.begin())
   {
-    //Serial.println(F("BMP nebylo nacteno!"));
+    //Serial.println(F("Unable to initialize BMP"));
   }
   else
   {
-    //Serial.println(F("BMP pripojeno!"));
+    //Serial.println(F("BMP initialized and connected"));
   }
   bmp.setOversampling(4);
 
@@ -145,7 +145,7 @@ String SerialRead(int count)
   return dsc;
 }
 
-//resetovaci funkce, nevim presne jak to funguje, nasel jsem to na netu
+//Reset
 //void(* reset) (void) = 0;
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
@@ -154,8 +154,8 @@ String SerialRead(int count)
 void loop()
 {
   HandleSerial();
-  refresh_lcd(); //bacha, tohle je na displej!
-  refresh_led(); //bacha, tohle je na RGB led pasek!
+  refresh_lcd(); //Refresh LCD Display !!!! 
+  refresh_led(); //Refresh LED Strip !!!!!!
   mMenu();
   analogWrite(R_led_pin, 0);
   analogWrite(G_led_pin, 0);
@@ -164,24 +164,24 @@ void loop()
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
 
-void zobrazitIP()
+void getIP()
 {
   lcd.setCursor(0, 0); lcd.print(F("IP:             "));
   lcd.setCursor(0, 1); lcd.print(F("10.0.0.106      ")); //sem se doplni kod na zjisteni pravdive IP
 }
 
 
-void nastavitBarvu()
+void setColor()
 {
   int colorNow = 1;
-  lcd.setCursor(0, 0); lcd.print(F("Nastav postupne "));
-  lcd.setCursor(0, 1); lcd.print(F("hodnoty barev:  "));
+  lcd.setCursor(0, 0); lcd.print(F("Set colors "));
+  lcd.setCursor(0, 1); lcd.print(F("one by one:  "));
   delay(1800);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  lcd.setCursor(0, 0); lcd.print(F("Hodnota cervene "));
-  lcd.setCursor(0, 1); lcd.print(F("barvy:          "));
+  lcd.setCursor(0, 0); lcd.print(F("Red value "));
+  lcd.setCursor(0, 1); lcd.print(F("colors:          "));
 
 
   do
@@ -204,7 +204,7 @@ void nastavitBarvu()
         break;
 
       case 3:
-        lcd.setCursor(0, 0); lcd.print(F("Cervena barva   "));
+        lcd.setCursor(0, 0); lcd.print(F("Red color   "));
         lcd.setCursor(0, 1); lcd.print(F("                "));
         colorNow = 2;
         delay(500);
@@ -224,12 +224,12 @@ void nastavitBarvu()
   }
   while (true);
 colorEnter1:
-  lcd.setCursor(0, 1); lcd.print(F("nastavena!      "));
+  lcd.setCursor(0, 1); lcd.print(F("Success !      "));
   delay(500);
 
 
-  lcd.setCursor(0, 0); lcd.print(F("Hodnota zelene  "));
-  lcd.setCursor(0, 1); lcd.print(F("barvy:          "));
+  lcd.setCursor(0, 0); lcd.print(F("Green value  "));
+  lcd.setCursor(0, 1); lcd.print(F("colors:          "));
 
 
   do
@@ -252,7 +252,7 @@ colorEnter1:
         break;
 
       case 3:
-        lcd.setCursor(0, 0); lcd.print(F("Zelena barva    "));
+        lcd.setCursor(0, 0); lcd.print(F("Green color    "));
         lcd.setCursor(0, 1); lcd.print(F("                "));
         colorNow = 2;
         delay(500);
@@ -272,12 +272,12 @@ colorEnter1:
   }
   while (true);
 colorEnter2:
-  lcd.setCursor(0, 1); lcd.print(F("nastavena!      "));
+  lcd.setCursor(0, 1); lcd.print(F("Success !!      "));
   delay(500);
 
 
-  lcd.setCursor(0, 0); lcd.print(F("Hodnota modre   "));
-  lcd.setCursor(0, 1); lcd.print(F("barvy:          "));
+  lcd.setCursor(0, 0); lcd.print(F("Blue value    "));
+  lcd.setCursor(0, 1); lcd.print(F("colors:          "));
 
 
   do
@@ -300,7 +300,7 @@ colorEnter2:
         break;
 
       case 3:
-        lcd.setCursor(0, 0); lcd.print(F("Modra barva     "));
+        lcd.setCursor(0, 0); lcd.print(F("Blue color     "));
         lcd.setCursor(0, 1); lcd.print(F("                "));
         colorNow = 2;
         delay(500);
@@ -320,12 +320,12 @@ colorEnter2:
   }
   while (true);
 colorEnter3:
-  lcd.setCursor(0, 1); lcd.print(F("nastavena!      "));
+  lcd.setCursor(0, 1); lcd.print(F("Success !!      "));
   delay(1000);
 
 
-  lcd.setCursor(0, 0); lcd.print(F("Hodnoty barev   "));
-  lcd.setCursor(0, 1); lcd.print(F("nastaveny!      "));
+  lcd.setCursor(0, 0); lcd.print(F("All color      "));
+  lcd.setCursor(0, 1); lcd.print(F("values set"));
 
 
 }
@@ -334,21 +334,21 @@ colorEnter3:
 void ukazatTeplotu()
 {
   lcd.setCursor(0, 0); lcd.print(F("                "));
-  lcd.setCursor(0, 1); lcd.print(F("Temp: 21 C   ")); //sem se doplni kod na zjisteni pravdive teploty
+  lcd.setCursor(0, 1); lcd.print(F("Temp: 21 C   ")); //#HERE Add code for getting temp value
 }
 
 
 void ukazatVlhkost()
 {
   lcd.setCursor(0, 0); lcd.print(F("                "));
-  lcd.setCursor(0, 1); lcd.print(F("Humi: 59 %   ")); //sem se doplni kod na zjisteni pravdive vlhkosti
+  lcd.setCursor(0, 1); lcd.print(F("Humi: 59 %   ")); //#HERE Add code for getting humidity value
 }
 
 
 void ukazatTlak()
 {
   lcd.setCursor(0, 0); lcd.print(F("                "));
-  lcd.setCursor(0, 1); lcd.print(F("Press: 1000 hPa ")); //sem se doplni kod na zjisteni pravdiveho tlaku
+  lcd.setCursor(0, 1); lcd.print(F("Press: 1000 hPa ")); //#HERE Add code for getting pressure value
 }
 
 
@@ -603,13 +603,13 @@ long htu(int adresa, int kod)
 
 float HTU_convTemp()
 {
-  return -46.85 + 175.72 * ((htu(HTU_ADRESA, HTU_TEPLOTA)) / pow(2, 16));
+  return -46.85 + 175.72 * ((htu(HTU_ADDRESS, HTU_TEMP)) / pow(2, 16));
 }
 
 
 float HTU_convHumi()
 {
-  return -6 + 125 * ((htu(HTU_ADRESA, HTU_VLHKOST)) / pow(2, 16));
+  return -6 + 125 * ((htu(HTU_ADDRESS, HTU_HUMIDITY)) / pow(2, 16));
 }
 
 
@@ -645,9 +645,9 @@ float BMP(int in)
 
 int mMenu()
 {
-  mPozice = 1;
-  mZacatek = true;
-  mZobrazeny = 1;
+  mPosition = 1;
+  mStart = true;
+  mShown = 1;
 
 
 
@@ -698,21 +698,21 @@ int mStart()
 
 
         if (mFlip == 2) {
-          mPozice -= 2;
+          mPosition -= 2;
         }
 
 
-        //if (mFlip == 1 && mPozice == mPocet) {
-        //  mPozice = (mPocet - 1);
+        //if (mFlip == 1 && mPosition == mItemCount) {
+        //  mPosition = (mItemCount - 1);
         //}
 
-        //if (mZacatek == true) {mPozice -= 1; mZacatek = false;}
+        //if (mStart == true) {mPosition -= 1; mStart = false;}
         mUp();
         break;
 
       case 2:
         if (mFlip == 1) {
-          mPozice += 2;
+          mPosition += 2;
         }
         mDown();
         break;
@@ -731,31 +731,31 @@ int mStart()
 
 void mUp()
 {
-  if (mPozice < 0) {
-    mPozice = 0;
+  if (mPosition < 0) {
+    mPosition = 0;
   }
 
-  if (mPozice == mPocet) {
-    mPozice = mPocet;
-    mPozice--;
+  if (mPosition == mItemCount) {
+    mPosition = mItemCount;
+    mPosition--;
   }
-  lcd.setCursor(0, 1); lcd.print(mChar[mPozice]);
-  mZobrazeny = mPozice;
-  mZobrazeny++;
-  mPozice--;
+  lcd.setCursor(0, 1); lcd.print(mChar[mPosition]);
+  mShown = mPosition;
+  mShown++;
+  mPosition--;
   mFlip = 1;
 }
 
 
 void mDown()
 {
-  lcd.setCursor(0, 1); lcd.print(mChar[mPozice]);
-  mZobrazeny = mPozice;
-  mZobrazeny++;
-  mPozice++;
+  lcd.setCursor(0, 1); lcd.print(mChar[mPosition]);
+  mShown = mPosition;
+  mShown++;
+  mPosition++;
 
-  if (mPozice == mPocet) {
-    mPozice = mPozice - 1;
+  if (mPosition == mItemCount) {
+    mPosition = mPosition - 1;
   }
   mFlip = 2;
 }
@@ -763,14 +763,14 @@ void mDown()
 
 void mEnter()
 {
-  switch (mZobrazeny) { //Tady se zpousti ty funkce z menu
+  switch (mShown) { //Tady se zpousti ty funkce z menu
     case 1:
-      zobrazitIP();
+      getIP();
       mBack();
       break;
 
     case 2:
-      nastavitBarvu();
+      setColor();
       mBack();
       break;
 
@@ -807,7 +807,7 @@ zacatek:
   }
   goto zacatek;
 konec:
-  int mToCoSeMaZobrazit = mZobrazeny;
+  int mToCoSeMaZobrazit = mShown;
   mToCoSeMaZobrazit--;
   lcd.setCursor(0, 1); lcd.print(mChar[mToCoSeMaZobrazit]);
 }
