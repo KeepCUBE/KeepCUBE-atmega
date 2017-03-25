@@ -31,7 +31,7 @@ RF24Mesh mesh(radio, network);
 const int DataPin = 8;
 const int IRQpin =  2;
 
-PS2Keyboard keyboard;
+PS2Keyboard ps2;
 
 LiquidCrystal lcd(9, 16, 17, 7, 6, 5, 4);
 uint32_t displayTimer = 0;
@@ -39,7 +39,7 @@ uint32_t displayTimer = 0;
 void setup() {
 
 
-  keyboard.begin(DataPin, IRQpin);
+  ps2.begin(DataPin, IRQpin);
 
   Serial.begin(9600);
 
@@ -74,13 +74,10 @@ String msg = "";
 
 void loop() {
 
-  delay(1);
-  // Call mesh.update to keep the network updated
+  
   mesh.update();
-
-  // In addition, keep the 'DHCP service' running on the master node so addresses will
-  // be assigned to the sensor nodes
   mesh.DHCP();
+  delay(10);
 
 
 
@@ -95,15 +92,15 @@ void loop() {
 
 
 
-  if (keyboard.available()) {
+  if (ps2.available()) {
 
     // read the next key
-    char c = keyboard.read();
+    char c = ps2.read();
 
     // check for some of the special keys
     if (c == PS2_ENTER) {
 
-      int size = msg.length() + 1;
+      int size = msg.length() + 2;
 
       char a[size];
       msg.toCharArray(a, size);
