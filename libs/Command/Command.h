@@ -8,7 +8,7 @@ class Command {
     
     void readSerial();
     String getIdentifier();
-    String getParameter(int nth);
+    String getParam(const char parameterIdentifier);
     String getParameterValue(const char parameterIdentifier);
     
     String toString();
@@ -128,13 +128,13 @@ String Command::getParameterValue(const char parameterIdentifier) {
         }
     }
     
-    return "";
+    return "#";
 }
 
 
 
-// Get n-th parameter of command
-String Command::getParameter(int nth) {
+
+String Command::getParam(const char parameterIdentifier) {
     int length = msg.length() + 1;
     int start, round = 0;
     //bool cmdAsParameter = false;
@@ -144,16 +144,14 @@ String Command::getParameter(int nth) {
         if ((char)msg.charAt(i) == startChar) {
             while ((char)msg.charAt(i) != endChar) {
                 i++;
+				// TODO: cmdAsParameter = true;
             }
         }
         
-        if (isUppercaseLetter(msg.charAt(i))) {
-            if (round == nth) {
-                start = i;
-                break;
-            }
-            round++;
-        }
+        if (isUppercaseLetter(msg.charAt(i)) && msg.charAt(i) == parameterIdentifier) {
+			start = i + 1;
+            break;
+		}
     }
     
     String param = (String)msg.charAt(start);
