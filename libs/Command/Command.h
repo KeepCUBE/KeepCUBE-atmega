@@ -1,18 +1,12 @@
 class Command {
   public:
-    // Constructors
     Command(char starting, char ending);
     Command(String m);
     Command(char &m);
     Command();
     
     void set(String s);
-    void readSerial();
     String getIdentifier();
-<<<<<<< HEAD
-    String getParam(const char parameterIdentifier);
-    String getParameterValue(const char parameterIdentifier);
-=======
     void setIdentifier(String identifier);
     String getParam(const char parameterIdentifier);
     void setParam(const char parameterIdentifier, int value);
@@ -21,25 +15,19 @@ class Command {
     void delParam(const char parameterIdentifier);
     bool hasParam(const char parameterIdentifier);
     
->>>>>>> origin/master
-    
     String toString();
     
     //bool verify();
     
     String encodeString(String str);
     String decodeString(String str);
-  
+    
+    // Deprecated
+    void readSerial();
     
     
-    
-  private:
-  
+  private:  
     String msg = "";
-    
-    
-    
-    
     
     bool isHex(String str);
     bool isUppercaseLetter(char m);
@@ -52,11 +40,7 @@ class Command {
     char endChar = ';';
     char wrapChar = '&';
     char escChar = '\\';
-    
-    
-    
 };
-
 
 
 Command::Command(char starting, char ending): startChar(starting), endChar(ending) {}
@@ -64,7 +48,7 @@ Command::Command(String m): msg(m) {}
 Command::Command(char &m): msg(String(m)) {}
 Command::Command() {}
 
-
+// Deprecated
 void Command::readSerial() {
     char letter;
     //long length = 0;
@@ -143,19 +127,9 @@ void Command::setIdentifier(String identifier) {
             msg.setCharAt(3, identifier.charAt(2));
         }
     }
-<<<<<<< HEAD
-    
-    return "#";
 }
 
 
-
-
-=======
-}
-
-
->>>>>>> origin/master
 String Command::getParam(const char parameterIdentifier) {
     int length = msg.length() + 1;
     int start, round = 0;
@@ -167,21 +141,14 @@ String Command::getParam(const char parameterIdentifier) {
             i++;
             while (msg.charAt(i) != wrapChar && msg.charAt(i - 1) == escChar) {
                 i++;
-				// TODO: cmdAsParameter = true;
             }
         }
         
         if (isUppercaseLetter(msg.charAt(i)) && msg.charAt(i) == parameterIdentifier) {
-<<<<<<< HEAD
-			start = i + 1;
-            break;
-		}
-=======
             msg.charAt(i + 1) == wrapChar ? strAsParam = true : strAsParam = false;
             start = i;
             break;
         }
->>>>>>> origin/master
     }
     
     String param = "";
@@ -190,7 +157,6 @@ String Command::getParam(const char parameterIdentifier) {
             while (true) {
                 param += (String)msg.charAt(i);
                 i++;
-                //Serial.print(msg.charAt(i));
                 
                 if (msg.charAt(i) == wrapChar && msg.charAt(i - 1) != escChar && isUppercaseLetter(msg.charAt(i + 1))) {
                     param += (String)msg.charAt(i);
@@ -363,13 +329,6 @@ bool Command::hasParam(const char parameterIdentifier) {
     }
     return false;
 }
-
-
-/*
-&asd\&fuuausud\\gudsa\dag&
- asd&fuuausud\gudsa\dag
-&asd\&fuuausud\\gudsa\\dag&
-*/
 
 
 String Command::encodeString(String str) {
