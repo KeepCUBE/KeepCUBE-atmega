@@ -61,6 +61,14 @@ void setup() {
   digitalWrite(4, LOW);
 
 
+  pinMode(18, OUTPUT);
+  pinMode(19, OUTPUT);
+  digitalWrite(18, LOW);
+  digitalWrite(19, LOW);
+
+
+
+
   Serial.begin(9600);
 
 
@@ -78,6 +86,8 @@ void setup() {
   radio.printDetails();
 
   Serial.println(F("Connected"));
+  digitalWrite(19, HIGH);
+
 
 
 
@@ -162,6 +172,7 @@ void loop() {
 
 
   if (network.available()) {
+    digitalWrite(19, LOW);
     int size = 100;
     char a[size];
 
@@ -171,13 +182,14 @@ void loop() {
     Command msg(a);
 
     if (msg.getIdentifier() == "SLP") {
-      int numberOfPoints     = msg.getParameterValue('L').toInt();
-      int transitionDuration = msg.getParameterValue('T').toInt();
-      int litDuration        = msg.getParameterValue('D').toInt();
-      String colors          = msg.getParameterValue('P');
-
+      int numberOfPoints     = msg.getParam('L').toInt();
+      int transitionDuration = msg.getParam('T').toInt();
+      int litDuration        = msg.getParam('D').toInt();
+      String colors          = msg.getParam('P');
+      
       cube.setTransitionParameters(numberOfPoints, transitionDuration, litDuration, colors);
     }
+    digitalWrite(19, HIGH);
   }
 
 
