@@ -21,11 +21,16 @@
 #include <PS2Keyboard.h>
 #include <LiquidCrystal.h>
 
+#include "Command.h"
+#include "KeepCube.h"
+
 
 
 RF24 radio(10, 3);
 RF24Network network(radio);
 RF24Mesh mesh(radio, network);
+
+KeepCube cube(radio, network);
 
 
 const int DataPin = 8;
@@ -50,11 +55,11 @@ void setup() {
   Serial.println(mesh.getNodeID());
   // Connect to the mesh
   mesh.begin();
-  
+
   radio.setPALevel(RF24_PA_HIGH);
 
-  printf_begin();
-  radio.printDetails();
+  //printf_begin();
+  //radio.printDetails();
 
 
   pinMode(18, OUTPUT);
@@ -73,89 +78,99 @@ int i = 0;
 String msg = "";
 
 void loop() {
-
-  
+  //delay(10);
   mesh.update();
   mesh.DHCP();
-  delay(10);
 
+  if (Serial.available()) {
+    Command msg(Serial.readString());
+    String identifier = msg.getIdentifier();
 
+    if (identifier == "NRF") {
+      int ID = msg.getParam('A').toInt(); // jakoze Adress
+      String data = msg.getParam('D'); // jakoze Data
 
-
-
-
-
-
-
-
-
-
-
-
-  if (ps2.available()) {
-
-    // read the next key
-    char c = ps2.read();
-
-    // check for some of the special keys
-    if (c == PS2_ENTER) {
-
-      int size = msg.length() + 2;
-
-      char a[size];
-      msg.toCharArray(a, size);
-
-lcd.clear();
-
-      if (!mesh.write(&a, 'M', size, 1)) {
-        lcd.print("Failed");
+      Serial.println(data);
+      
+      char a[data.length() + 1];
+      data.toCharArray(a, data.length() + 1);
+      
+      int giveupTimer = 0;
+      while (!mesh.write(&a, 'M', data.length() + 1, ID) && giveupTimer < 10) {
+        //        if (!mesh.checkConnection()) {
+        //          //refresh the network address
+        //          mesh.renewAddress();
+        //        }
+        giveupTimer++;
+        delay(giveupTimer * 100);
       }
-      else {
-        lcd.print("OK");
-      }
-
-      delay(1000);
-      lcd.clear();
-      i = 0;
-      msg = "";
-
-
-    } else {
-
-      // otherwise, just print all normal characters
-      Serial.print(c);
-      lcd.write(c);
-      msg += (String)c;
-
-
-
-      i++;
-      if (i == 20) {
-        lcd.setCursor(0, 1);
-      }
-      else if (i == 40) {
-        lcd.setCursor(0, 2);
-      }
-      else if (i == 60) {
-        lcd.setCursor(0, 3);
-      }
-      else if (i == 80) {
-        lcd.setCursor(0, 1);
-        lcd.clear();
-        i = 0;
-        msg = "";
-      }
-
-
-
-
     }
+
+
+
+
+
   }
 
-
-
-
-
+  //  if (ps2.available()) {
+  //
+  //    // read the next key
+  //    char c = ps2.read();
+  //
+  //    // check for some of the special keys
+  //    if (c == PS2_ENTER) {
+  //
+  //      int size = msg.length() + 2;
+  //
+  //      char a[size];
+  //      msg.toCharArray(a, size);
+  //
+  //      lcd.clear();
+  //
+  //      if (!mesh.write(&a, 'M', size, 1)) {
+  //        lcd.print("Failed");
+  //      }
+  //      else {
+  //        lcd.print("OK");
+  //      }
+  //
+  //      delay(500);
+  //      lcd.clear();
+  //      //i = 0;
+  //      lcd.print(msg);
+  //
+  //
+  //    } else {
+  //
+  //      // otherwise, just print all normal characters
+  //      Serial.print(c);
+  //      lcd.write(c);
+  //      msg += (String)c;
+  //
+  //
+  //
+  //      i++;
+  //      if (i == 20) {
+  //        lcd.setCursor(0, 1);
+  //      }
+  //      else if (i == 40) {
+  //        lcd.setCursor(0, 2);
+  //      }
+  //      else if (i == 60) {
+  //        lcd.setCursor(0, 3);
+  //      }
+  //      else if (i == 80) {
+  //        lcd.setCursor(0, 1);
+  //        lcd.clear();
+  //        i = 0;
+  //        msg = "";
+  //      }
+  //
+  //
+  //
+  //
+  //    }
+  //  }
 
 
 
@@ -259,8 +274,6 @@ lcd.clear();
   //    //     Serial.println("failed");
   //    // }
   //  }
-
-
 
 
 }
