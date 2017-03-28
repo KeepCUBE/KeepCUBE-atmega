@@ -152,12 +152,14 @@ String Command::getParam(const char parameterIdentifier) {
             i++;
             while (msg.charAt(i) != wrapChar && msg.charAt(i - 1) == escChar) {
                 i++;
+                Serial.println("Point 1");
             }
         }
         
         if (isUppercaseLetter(msg.charAt(i)) && msg.charAt(i) == parameterIdentifier) {
             msg.charAt(i + 1) == wrapChar ? strAsParam = true : strAsParam = false;
             start = i;
+            Serial.println("Point 2, start: " + (String)start + " strAsParam: " + (String)strAsParam);
             break;
         }
     }
@@ -166,12 +168,14 @@ String Command::getParam(const char parameterIdentifier) {
     for (int i = start + 1; !isUppercaseLetter(msg.charAt(i)); i++) {
         if (strAsParam) {
             while (true) {
+                Serial.println("Point 3, charAt(i): " + (String)msg.charAt(i));
                 param += (String)msg.charAt(i);
                 i++;
-                //Serial.print(msg.charAt(i));
+
                 
-                if (msg.charAt(i) == wrapChar && msg.charAt(i - 1) != escChar && isUppercaseLetter(msg.charAt(i + 1))) {
+                if (msg.charAt(i) == wrapChar && msg.charAt(i - 1) != escChar && isUppercaseLetter(msg.charAt(i + 1)) || msg.charAt(i + 1) == endChar) {
                     param += (String)msg.charAt(i);
+                    Serial.println("Point 4");
                     break;
                 }
             }
@@ -179,15 +183,18 @@ String Command::getParam(const char parameterIdentifier) {
         }
         
         if (msg.charAt(i) == endChar) {
+            Serial.println("Point 5");
             break;
         }
         else if (msg.charAt(i) == startChar) {
             for (int j = i - 1; msg.charAt(j) != endChar; j++) {
                 param += (String)msg.charAt(j + 1);
+                Serial.println("Point 6");
             }
         }
         else {
             param += (String)msg.charAt(i);
+            Serial.println("Point 7");
         }
     }
     
@@ -377,13 +384,17 @@ String Command::decodeString(String str) {
     int index = 0;
     str.remove(0, 1);
     str.remove(str.length() - 1);
-    
+
+    // Check for functionality
     while (index != -1) {
         index = str.indexOf(escChar, index + 1);
         if (str.charAt(index + 1) == wrapChar || str.charAt(index + 1) == escChar) {
             str.remove(index, 1);
         }
     }
+
+//    str.replace("\\&", "&");
+//    str.replace("\\\\", "\\");
     
     return str;
 }

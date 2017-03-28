@@ -167,6 +167,73 @@ void loop() {
   //  }
 
 
+  // Check network connection every 1 sec
+  if (millis() - displayTimer > 1000) {
+    displayTimer = millis();
+
+    digitalWrite(19, LOW);
+
+    if (!mesh.checkConnection()) {
+      //refresh the network address
+      Serial.println("Renewing Address");
+      mesh.renewAddress();
+    }
+    else {
+      Serial.println("Test OK");
+      digitalWrite(19, HIGH);
+    }
+
+  }
+
+
+
+
+
+
+
+ if (Serial.available()) {
+
+
+
+int i = 0;
+char *first;
+
+  while (Serial.available()) {
+
+
+
+*first = (char)Serial.read();
+
+
+first++;
+i++;
+
+
+  }
+
+
+
+
+
+for (int j = 0; j < i; j++) {
+
+
+Serial.print(first);
+first--;
+    
+}
+  
+
+
+ 
+ }
+
+  
+
+
+
+
+
 
 
 
@@ -181,13 +248,29 @@ void loop() {
 
     Command msg(a);
 
-    if (msg.getIdentifier() == "SLP") {
+    if (msg.getIdentifier() == "SLP" &&
+        msg.hasParam('L') &&
+        msg.hasParam('T') &&
+        msg.hasParam('D') &&
+        msg.hasParam('P')) {
+
+      //Serial.println("\n\n" + msg.toString());
+
       int numberOfPoints     = msg.getParam('L').toInt();
+      //Serial.println("L: " + (String)numberOfPoints);
+
       int transitionDuration = msg.getParam('T').toInt();
+      //Serial.println("T: " + (String)transitionDuration);
+
       int litDuration        = msg.getParam('D').toInt();
+      //Serial.println("D: " + (String)litDuration);
+
       String colors          = msg.getParam('P');
-      
+      //Serial.println("P: " + (String)colors);
+
       cube.setTransitionParameters(numberOfPoints, transitionDuration, litDuration, colors);
+      //setLEDpattern
+      //setLEDkeyframes
     }
     digitalWrite(19, HIGH);
   }
