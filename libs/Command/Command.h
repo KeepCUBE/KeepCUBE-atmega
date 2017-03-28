@@ -1,11 +1,13 @@
 class Command {
   public:
+    // Constructors
     Command(char starting, char ending);
     Command(String m);
     Command(char &m);
     Command();
     
     void set(String s);
+    void readSerial();
     String getIdentifier();
     void setIdentifier(String identifier);
     String getParam(const char parameterIdentifier);
@@ -15,19 +17,24 @@ class Command {
     void delParam(const char parameterIdentifier);
     bool hasParam(const char parameterIdentifier);
     
+    
     String toString();
     
     //bool verify();
     
     String encodeString(String str);
     String decodeString(String str);
-    
-    // Deprecated
-    void readSerial();
+  
     
     
-  private:  
+    
+  private:
+  
     String msg = "";
+    
+    
+    
+    
     
     bool isHex(String str);
     bool isUppercaseLetter(char m);
@@ -40,7 +47,11 @@ class Command {
     char endChar = ';';
     char wrapChar = '&';
     char escChar = '\\';
+    
+    
+    
 };
+
 
 
 Command::Command(char starting, char ending): startChar(starting), endChar(ending) {}
@@ -48,7 +59,7 @@ Command::Command(String m): msg(m) {}
 Command::Command(char &m): msg(String(m)) {}
 Command::Command() {}
 
-// Deprecated
+// @Deprecated
 void Command::readSerial() {
     char letter;
     //long length = 0;
@@ -141,12 +152,14 @@ String Command::getParam(const char parameterIdentifier) {
             i++;
             while (msg.charAt(i) != wrapChar && msg.charAt(i - 1) == escChar) {
                 i++;
+                //Serial.println("Point 1");
             }
         }
         
         if (isUppercaseLetter(msg.charAt(i)) && msg.charAt(i) == parameterIdentifier) {
             msg.charAt(i + 1) == wrapChar ? strAsParam = true : strAsParam = false;
             start = i;
+            //Serial.println("Point 2, start: " + (String)start + " strAsParam: " + (String)strAsParam);
             break;
         }
     }
@@ -155,11 +168,14 @@ String Command::getParam(const char parameterIdentifier) {
     for (int i = start + 1; !isUppercaseLetter(msg.charAt(i)); i++) {
         if (strAsParam) {
             while (true) {
+                //Serial.println("Point 3, charAt(i): " + (String)msg.charAt(i));
                 param += (String)msg.charAt(i);
                 i++;
+
                 
-                if (msg.charAt(i) == wrapChar && msg.charAt(i - 1) != escChar && isUppercaseLetter(msg.charAt(i + 1))) {
+                if (msg.charAt(i) == wrapChar && msg.charAt(i - 1) != escChar/* && isUppercaseLetter(msg.charAt(i + 1)) || msg.charAt(i + 1) == endChar */) {
                     param += (String)msg.charAt(i);
+                    //Serial.println("Point 4");
                     break;
                 }
             }
@@ -167,15 +183,18 @@ String Command::getParam(const char parameterIdentifier) {
         }
         
         if (msg.charAt(i) == endChar) {
+            //Serial.println("Point 5");
             break;
         }
         else if (msg.charAt(i) == startChar) {
             for (int j = i - 1; msg.charAt(j) != endChar; j++) {
                 param += (String)msg.charAt(j + 1);
+                //Serial.println("Point 6");
             }
         }
         else {
             param += (String)msg.charAt(i);
+            //Serial.println("Point 7");
         }
     }
     
@@ -331,6 +350,13 @@ bool Command::hasParam(const char parameterIdentifier) {
 }
 
 
+/*
+&asd\&fuuausud\\gudsa\dag&
+ asd&fuuausud\gudsa\dag
+&asd\&fuuausud\\gudsa\\dag&
+*/
+
+
 String Command::encodeString(String str) {
     if (isHex(str)) return str;
     int index = 0;
@@ -352,19 +378,28 @@ String Command::encodeString(String str) {
 
 
 String Command::decodeString(String str) {
-    if (isHex(str)) return str;
-    if (!str.startsWith((String)wrapChar) && !str.endsWith((String)wrapChar)) return str;
+    //if (isHex(str)) return str;
+    //if (!str.startsWith((String)wrapChar) && !str.endsWith((String)wrapChar)) return str;
     
     int index = 0;
     str.remove(0, 1);
     str.remove(str.length() - 1);
-    
+
+    // microsoft-like fix
+    if (str.startsWith((String)wrapChar)) {
+        str.concat(endChar);    
+    }
+
+    // TODO: Check for functionality
     while (index != -1) {
         index = str.indexOf(escChar, index + 1);
         if (str.charAt(index + 1) == wrapChar || str.charAt(index + 1) == escChar) {
             str.remove(index, 1);
         }
     }
+
+//    str.replace("\\&", "&");
+//    str.replace("\\\\", "\\");
     
     return str;
 }
