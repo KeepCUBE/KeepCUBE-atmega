@@ -14,6 +14,7 @@ class KeepCube {
 
     void updateLED();
     void setTransitionParameters(int L, int T, int D, String P);
+    void setLEDpattern(int L, int P, int T, int D, String C);
 
     void led(byte r, byte g, byte b, int time);
     void led(rgb color, int time);
@@ -67,6 +68,16 @@ class KeepCube {
     String colorString;
 
 
+    struct SLP {
+      int L;
+      int P;
+      int T;
+      int D;
+      String C;
+    } SLP;
+
+
+
 
 };
 
@@ -107,18 +118,16 @@ bool KeepCube::begin() {
 
 
 void KeepCube::updateLED() {
-  // if (numberOfPoints == 0) {
-
-  //     return;
-  // }
-
-
+  // if (numberOfPoints == 0) return;
   //rgb colorArray[numberOfPoints];
 
-  for (int i = 0; i < numberOfPoints; i++) {
+  if (SLP.L == -1) return;
+
+
+  for (int i = 0; i < SLP.P; i++) {
     char hex[6];
     String a;
-    i == 0 ? a = colorString.substring(0, 6) : a = colorString.substring(6 * i, 6 * i + 6);
+    i == 0 ? a = SLP.C.substring(0, 6) : a = SLP.C.substring(6 * i, 6 * i + 6);
 
     for (int i = 0; i < 6; i++) {
       hex[i] = a.charAt(i);
@@ -130,15 +139,18 @@ void KeepCube::updateLED() {
     color.g = number >> 8 & 0xFF;
     color.b = number & 0xFF;
 
-    led(color, transitionDuration);
-    delay(litDuration);
-
-
+    led(color, SLP.T);
+    delay(SLP.D);
   }
+
+  if (SLP.L == 0) SLP.L = -1;
 
 }
 
 
+void KeepCube::setLEDpattern(int L, int P, int T, int D, String C) {
+  SLP = {L, P, T, D, C};
+}
 
 
 void KeepCube::setTransitionParameters(int L, int T, int D, String P) {
@@ -147,7 +159,6 @@ void KeepCube::setTransitionParameters(int L, int T, int D, String P) {
   litDuration = D;
   colorString = P;
 }
-
 
 
 int KeepCube::calculateStep(int startVal, int endVal) {

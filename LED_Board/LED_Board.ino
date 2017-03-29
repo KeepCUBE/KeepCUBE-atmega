@@ -191,44 +191,9 @@ void loop() {
 
 
 
- if (Serial.available()) {
 
 
 
-int i = 0;
-char *first;
-
-  while (Serial.available()) {
-
-
-
-*first = (char)Serial.read();
-
-
-first++;
-i++;
-
-
-  }
-
-
-
-
-
-for (int j = 0; j < i; j++) {
-
-
-Serial.print(first);
-first--;
-    
-}
-  
-
-
- 
- }
-
-  
 
 
 
@@ -246,29 +211,45 @@ first--;
     RF24NetworkHeader header;
     network.read(header, &a, sizeof(a));
 
-    Command msg(a);
+    /*
+      Parametry příkazu SLP
+      L (int), určuje, zda se budou zadané barevné body opakovat či nikoliv
+      P (int), počet barevných bodů
+      T (int), čas přechodu mezi barvami [ms]
+      D (int), čas setrvání jedné barvy [ms]
+      C (string), definice barev všech barev v HEX kódu za sebou.
+    */
+
+//    Command msg(a);
+    Command msg("#SLPL1P2T1000D1000C&ff00000000ff&;");
 
     if (msg.getIdentifier() == "SLP" &&
         msg.hasParam('L') &&
+        msg.hasParam('P') &&
         msg.hasParam('T') &&
         msg.hasParam('D') &&
-        msg.hasParam('P')) {
+        msg.hasParam('C')) {
 
-      //Serial.println("\n\n" + msg.toString());
+      int L = msg.getParam('L').toInt();
+      int P = msg.getParam('P').toInt();
+      int T = msg.getParam('T').toInt();
+      int D = msg.getParam('D').toInt();
+      String C = msg.getParam('C');
 
-      int numberOfPoints     = msg.getParam('L').toInt();
-      //Serial.println("L: " + (String)numberOfPoints);
-
-      int transitionDuration = msg.getParam('T').toInt();
-      //Serial.println("T: " + (String)transitionDuration);
-
-      int litDuration        = msg.getParam('D').toInt();
-      //Serial.println("D: " + (String)litDuration);
-
-      String colors          = msg.getParam('P');
+//      int numberOfPoints     = msg.getParam('L').toInt();
+//      //Serial.println("L: " + (String)numberOfPoints);
+//
+//      int transitionDuration = msg.getParam('T').toInt();
+//      //Serial.println("T: " + (String)transitionDuration);
+//
+//      int litDuration        = msg.getParam('D').toInt();
+//      //Serial.println("D: " + (String)litDuration);
+//
+//      String colors          = msg.getParam('P');
       //Serial.println("P: " + (String)colors);
 
-      cube.setTransitionParameters(numberOfPoints, transitionDuration, litDuration, colors);
+      //cube.setTransitionParameters(numberOfPoints, transitionDuration, litDuration, colors);
+      cube.setLEDpattern(L, P, T, D, C);
       //setLEDpattern
       //setLEDkeyframes
     }
