@@ -93,9 +93,9 @@ void setup() {
 
 }
 
+bool b = true;
 
 uint32_t a = 0;
-uint32_t b = 0;
 
 void loop() {
 
@@ -201,9 +201,12 @@ void loop() {
 
 
 
+//delay(3000);
 
-
-  if (network.available()) {
+//  if (network.available()) {
+  if (b) {
+    b = false;
+    
     digitalWrite(19, LOW);
     int size = 100;
     char a[size];
@@ -220,8 +223,10 @@ void loop() {
       C (string), definice barev všech barev v HEX kódu za sebou.
     */
 
-//    Command msg(a);
+    //    Command msg(a);
     Command msg("#SLPL1P2T1000D1000C&ff00000000ff&;");
+
+    Serial.println(msg.toString());
 
     if (msg.getIdentifier() == "SLP" &&
         msg.hasParam('L') &&
@@ -236,16 +241,18 @@ void loop() {
       int D = msg.getParam('D').toInt();
       String C = msg.getParam('C');
 
-//      int numberOfPoints     = msg.getParam('L').toInt();
-//      //Serial.println("L: " + (String)numberOfPoints);
-//
-//      int transitionDuration = msg.getParam('T').toInt();
-//      //Serial.println("T: " + (String)transitionDuration);
-//
-//      int litDuration        = msg.getParam('D').toInt();
-//      //Serial.println("D: " + (String)litDuration);
-//
-//      String colors          = msg.getParam('P');
+//      Serial.println("L: " + (String)numberOfPoints);
+
+      //      int numberOfPoints     = msg.getParam('L').toInt();
+      //      //Serial.println("L: " + (String)numberOfPoints);
+      //
+      //      int transitionDuration = msg.getParam('T').toInt();
+      //      //Serial.println("T: " + (String)transitionDuration);
+      //
+      //      int litDuration        = msg.getParam('D').toInt();
+      //      //Serial.println("D: " + (String)litDuration);
+      //
+      //      String colors          = msg.getParam('P');
       //Serial.println("P: " + (String)colors);
 
       //cube.setTransitionParameters(numberOfPoints, transitionDuration, litDuration, colors);

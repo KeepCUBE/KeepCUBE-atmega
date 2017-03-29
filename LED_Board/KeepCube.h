@@ -36,6 +36,9 @@ class KeepCube {
     RF24 radio;
     RF24Network network;
 
+
+
+
     const uint16_t this_node = 00;     // Address of our node in Octal format ( 04,031, etc)
     const uint16_t other_node = 01;   // Address of the other node in Octal format
 
@@ -62,12 +65,6 @@ class KeepCube {
     long loops = 1000;
 
 
-    int numberOfPoints;
-    int transitionDuration;
-    int litDuration;
-    String colorString;
-
-
     struct SLP {
       int L;
       int P;
@@ -75,7 +72,6 @@ class KeepCube {
       int D;
       String C;
     } SLP;
-
 
 
 
@@ -153,12 +149,12 @@ void KeepCube::setLEDpattern(int L, int P, int T, int D, String C) {
 }
 
 
-void KeepCube::setTransitionParameters(int L, int T, int D, String P) {
-  numberOfPoints = L;
-  transitionDuration = T;
-  litDuration = D;
-  colorString = P;
-}
+//void KeepCube::setTransitionParameters(int L, int T, int D, String P) {
+//  numberOfPoints = L;
+//  transitionDuration = T;
+//  litDuration = D;
+//  colorString = P;
+//}
 
 
 int KeepCube::calculateStep(int startVal, int endVal) {
