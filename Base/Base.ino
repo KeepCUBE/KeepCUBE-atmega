@@ -44,7 +44,7 @@ uint32_t displayTimer = 0;
 void setup() {
 
 
-//  ps2.begin(DataPin, IRQpin);
+  //  ps2.begin(DataPin, IRQpin);
 
   Serial.begin(9600);
 
@@ -62,13 +62,13 @@ void setup() {
   radio.printDetails();
 
 
-//  pinMode(18, OUTPUT);
-//  pinMode(19, OUTPUT);
-//  digitalWrite(18, LOW);
+  //  pinMode(18, OUTPUT);
+  //  pinMode(19, OUTPUT);
+  //  digitalWrite(18, LOW);
 
 
-//  lcd.begin(20, 4);
-//  lcd.cursor();
+  //  lcd.begin(20, 4);
+  //  lcd.cursor();
 
 }
 
@@ -82,11 +82,10 @@ void loop() {
     Command msg(Serial.readString());
     String identifier = msg.getIdentifier();
 
+    // Example: #NRFA1D&#SLPL2T1D1P\&ff00000000ff\&;&;
     if (identifier == "NRF") {
       int ID = msg.getParam('A').toInt(); // jakoze Adress
       String data = msg.getParam('D'); // jakoze Data
-
-      Serial.println(data);
       
       char a[data.length() + 1];
       data.toCharArray(a, data.length() + 1);
