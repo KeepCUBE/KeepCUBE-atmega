@@ -33,18 +33,18 @@ RF24Mesh mesh(radio, network);
 KeepCube cube(radio, network);
 
 
-const int DataPin = 8;
-const int IRQpin =  2;
+//const int DataPin = 8;
+//const int IRQpin =  2;
 
-PS2Keyboard ps2;
+//PS2Keyboard ps2;
 
-LiquidCrystal lcd(9, 16, 17, 7, 6, 5, 4);
+//LiquidCrystal lcd(9, 16, 17, 7, 6, 5, 4);
 uint32_t displayTimer = 0;
 
 void setup() {
 
 
-  ps2.begin(DataPin, IRQpin);
+//  ps2.begin(DataPin, IRQpin);
 
   Serial.begin(9600);
 
@@ -52,30 +52,26 @@ void setup() {
 
   // Set the nodeID to 0 for the master node
   mesh.setNodeID(0);
-  Serial.println(mesh.getNodeID());
+  //Serial.println(mesh.getNodeID());
   // Connect to the mesh
   mesh.begin();
 
   radio.setPALevel(RF24_PA_HIGH);
 
-  //printf_begin();
-  //radio.printDetails();
+  printf_begin();
+  radio.printDetails();
 
 
-  pinMode(18, OUTPUT);
-  pinMode(19, OUTPUT);
-  digitalWrite(18, LOW);
+//  pinMode(18, OUTPUT);
+//  pinMode(19, OUTPUT);
+//  digitalWrite(18, LOW);
 
 
-  lcd.begin(20, 4);
-  lcd.cursor();
+//  lcd.begin(20, 4);
+//  lcd.cursor();
 
 }
 
-int ctr = 0;
-uint32_t b = 0;
-int i = 0;
-String msg = "";
 
 void loop() {
   //delay(10);

@@ -19,6 +19,10 @@ class KeepCube {
     void led(rgb color, int time);
 
 
+    bool send(char header, String data, int id);
+    bool receive();
+
+
 
     rgb black   = {0, 0, 0};
     rgb white   = {255, 255, 255};
