@@ -78,6 +78,41 @@ void loop() {
   mesh.update();
   mesh.DHCP();
 
+
+
+
+  if (millis() - displayTimer > 10000) {
+    displayTimer = millis();
+
+    Command msg("#NRFA1D&#SLPL0P2T1000D1000C\\&ff00000000ff\\&;&;");
+    Serial.println("Sending: " + msg.toString());
+    String identifier = msg.getIdentifier();
+
+    if (identifier == "NRF") {
+      int ID = msg.getParam('A').toInt(); // jakoze Adress
+      String data = msg.getParam('D'); // jakoze Data
+
+      char a[data.length() + 1];
+      data.toCharArray(a, data.length() + 1);
+
+      int giveupTimer = 0;
+      while (!mesh.write(&a, 'M', data.length() + 1, ID) && giveupTimer < 10) {
+        //        if (!mesh.checkConnection()) {
+        //          //refresh the network address
+        //          mesh.renewAddress();
+        //        }
+        giveupTimer++;
+        delay(giveupTimer * 100);
+      }
+    }
+
+
+  }
+
+
+
+
+
   if (Serial.available()) {
     Command msg(Serial.readString());
     String identifier = msg.getIdentifier();
@@ -86,10 +121,10 @@ void loop() {
     if (identifier == "NRF") {
       int ID = msg.getParam('A').toInt(); // jakoze Adress
       String data = msg.getParam('D'); // jakoze Data
-      
+
       char a[data.length() + 1];
       data.toCharArray(a, data.length() + 1);
-      
+
       int giveupTimer = 0;
       while (!mesh.write(&a, 'M', data.length() + 1, ID) && giveupTimer < 10) {
         //        if (!mesh.checkConnection()) {

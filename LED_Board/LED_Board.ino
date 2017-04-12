@@ -30,7 +30,6 @@ RF24 radio(10, 3);
 RF24Network network(radio);
 RF24Mesh mesh(radio, network);
 
-Command message('#', ';');
 KeepCube cube(radio, network);
 
 
@@ -66,12 +65,7 @@ void setup() {
   digitalWrite(18, LOW);
   digitalWrite(19, LOW);
 
-
-
-
   Serial.begin(9600);
-
-
 
   // Set the nodeID manually
   mesh.setNodeID(1);
@@ -81,7 +75,7 @@ void setup() {
   //  Serial.println(mesh.begin(108, RF24_250KBPS, 10000));
   Serial.println(mesh.begin());
 
-  radio.setPALevel(RF24_PA_HIGH);
+  radio.setPALevel(RF24_PA_LOW);
   printf_begin();
   radio.printDetails();
 
@@ -201,12 +195,10 @@ void loop() {
 
 
 
-//delay(3000);
+  //delay(3000);
 
-//  if (network.available()) {
-  if (b) {
-    b = false;
-    
+  if (network.available()) {
+
     digitalWrite(19, LOW);
     int size = 100;
     char a[size];
@@ -223,8 +215,8 @@ void loop() {
       C (string), definice barev všech barev v HEX kódu za sebou.
     */
 
-    //    Command msg(a);
-    Command msg("#SLPL1P2T1000D1000C&ff00000000ff&;");
+    Command msg(a);
+    // Command msg("#SLPL0P2T1000D1000C&ff00000000ff&;");
 
     Serial.println(msg.toString());
 
@@ -241,24 +233,7 @@ void loop() {
       int D = msg.getParam('D').toInt();
       String C = msg.getParam('C');
 
-//      Serial.println("L: " + (String)numberOfPoints);
-
-      //      int numberOfPoints     = msg.getParam('L').toInt();
-      //      //Serial.println("L: " + (String)numberOfPoints);
-      //
-      //      int transitionDuration = msg.getParam('T').toInt();
-      //      //Serial.println("T: " + (String)transitionDuration);
-      //
-      //      int litDuration        = msg.getParam('D').toInt();
-      //      //Serial.println("D: " + (String)litDuration);
-      //
-      //      String colors          = msg.getParam('P');
-      //Serial.println("P: " + (String)colors);
-
-      //cube.setTransitionParameters(numberOfPoints, transitionDuration, litDuration, colors);
       cube.setLEDpattern(L, P, T, D, C);
-      //setLEDpattern
-      //setLEDkeyframes
     }
     digitalWrite(19, HIGH);
   }

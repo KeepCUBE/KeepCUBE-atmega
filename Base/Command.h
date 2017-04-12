@@ -425,3 +425,4 @@ bool Command::isHex(String str) {
 String Command::toString() {
     return (String)msg;
 }
+
