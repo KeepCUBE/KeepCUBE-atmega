@@ -49,6 +49,18 @@ uint32_t displayTimer = 0;
 rgb pin = {9, 5, 6};
 
 
+int serial_putc( char c, FILE * )
+{
+  Serial.write( c );
+  return c;
+}
+
+void printf_begin(void)
+{
+  fdevopen( &serial_putc, 0 );
+}
+
+
 void setup() {
 
   pinMode(pin.r, OUTPUT);
@@ -185,75 +197,65 @@ void loop() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-  //delay(3000);
-
   if (network.available()) {
-
     digitalWrite(19, LOW);
+
     int size = 100;
     char a[size];
 
     RF24NetworkHeader header;
     network.read(header, &a, sizeof(a));
 
-    /*
-      Parametry příkazu SLP
-      L (int), určuje, zda se budou zadané barevné body opakovat či nikoliv
-      P (int), počet barevných bodů
-      T (int), čas přechodu mezi barvami [ms]
-      D (int), čas setrvání jedné barvy [ms]
-      C (string), definice barev všech barev v HEX kódu za sebou.
-    */
+
 
     Command msg(a);
     // Command msg("#SLPL0P2T1000D1000C&ff00000000ff&;");
 
-    Serial.println(msg.toString());
+    //    Serial.println(msg.toString());
+    //
+    //    if (msg.getIdentifier() == "SLP" &&
+    //        msg.hasParam('L') &&
+    //        msg.hasParam('P') &&
+    //        msg.hasParam('T') &&
+    //        msg.hasParam('D') &&
+    //        msg.hasParam('C')) {
+    //
+    //      int L = msg.getParam('L').toInt();
+    //      int P = msg.getParam('P').toInt();
+    //      int T = msg.getParam('T').toInt();
+    //      int D = msg.getParam('D').toInt();
+    //      String C = msg.getParam('C');
+    //
+    //      cube.setLEDpattern(L, P, T, D, C);
+    //    }
+
+
+
+    /*
+       Parametry příkazu SLP
+       L (int), určuje, zda se budou zadané barevné body opakovat či nikoliv. 0 = jen jednou, 1 = opakovat
+       C (String), jednotlivé barvy, oddělené čárkami
+       T (String), jednotlivé časy, oddělené čárkami. Časy musí být vždy delta, tzn. závislé na předchozím čase.
+    */
 
     if (msg.getIdentifier() == "SLP" &&
         msg.hasParam('L') &&
-        msg.hasParam('P') &&
-        msg.hasParam('T') &&
-        msg.hasParam('D') &&
-        msg.hasParam('C')) {
+        msg.hasParam('C') &&
+        msg.hasParam('T')) {
 
       int L = msg.getParam('L').toInt();
-      int P = msg.getParam('P').toInt();
-      int T = msg.getParam('T').toInt();
-      int D = msg.getParam('D').toInt();
       String C = msg.getParam('C');
+      String T = msg.getParam('T');
 
-      cube.setLEDpattern(L, P, T, D, C);
+      cube.setLEDpattern(L, C, T);
     }
+
+
+    delay(10);
     digitalWrite(19, HIGH);
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-  delay(10);
-
-
 }
 
 
@@ -261,13 +263,4 @@ void loop() {
 
 
 
-int serial_putc( char c, FILE * )
-{
-  Serial.write( c );
-  return c;
-}
 
-void printf_begin(void)
-{
-  fdevopen( &serial_putc, 0 );
-}

@@ -14,7 +14,7 @@ class KeepCube {
 
     void updateLED();
     void setTransitionParameters(int L, int T, int D, String P);
-    void setLEDpattern(int L, int P, int T, int D, String C);
+    void setLEDpattern(int L, String C, String T);
 
     void led(byte r, byte g, byte b, int time);
     void led(rgb color, int time);
@@ -67,10 +67,8 @@ class KeepCube {
 
     struct SLP {
       int L;
-      int P;
-      int T;
-      int D;
       String C;
+      String T;
     } SLP;
 
 
@@ -114,20 +112,62 @@ bool KeepCube::begin() {
 
 
 void KeepCube::updateLED() {
-  // if (numberOfPoints == 0) return;
-  //rgb colorArray[numberOfPoints];
-
   if (SLP.L == -1) return;
 
+  //  for (int i = 0; i < SLP.P; i++) {
+  //    char hex[6];
+  //    String a;
+  //    i == 0 ? a = SLP.C.substring(0, 6) : a = SLP.C.substring(6 * i, 6 * i + 6);
+  //
+  //    for (int i = 0; i < 6; i++) {
+  //      hex[i] = a.charAt(i);
+  //    }
+  //
+  //    rgb color;
+  //    long number = strtol(&hex[0], NULL, 16);
+  //    color.r = number >> 16;
+  //    color.g = number >> 8 & 0xFF;
+  //    color.b = number & 0xFF;
+  //
+  //    led(color, SLP.T);
+  //    delay(SLP.D);
+  //  }
 
-  for (int i = 0; i < SLP.P; i++) {
-    char hex[6];
-    String a;
-    i == 0 ? a = SLP.C.substring(0, 6) : a = SLP.C.substring(6 * i, 6 * i + 6);
 
-    for (int i = 0; i < 6; i++) {
-      hex[i] = a.charAt(i);
+
+
+
+
+
+  // zjisteni poctu prvku v poli
+  int len = 0; // bude tam vzdy o carku min
+  for (int i = 0; i < SLP.C.length(); i++) {
+    if (SLP.C.charAt(i) == ',') {
+      len++;
     }
+  }
+
+  int j = 0;
+  int k = 0;
+  int l = 0;
+
+  for (int i = 0; i < len; i++) {
+    char hex[6];
+    k = 0;
+
+    while (SLP.C.charAt(j) != ',') {
+      hex[k] = SLP.C.charAt(j);
+      j++;
+      k++;
+    }
+    j++; // preskoceni carky
+
+    String tds = "";
+    while (SLP.T.charAt(l) != ',') {
+      tds += SLP.T.charAt(l);
+      l++;
+    }
+    l++; // preskoceni carky
 
     rgb color;
     long number = strtol(&hex[0], NULL, 16);
@@ -135,17 +175,23 @@ void KeepCube::updateLED() {
     color.g = number >> 8 & 0xFF;
     color.b = number & 0xFF;
 
-    led(color, SLP.T);
-    delay(SLP.D);
+    led(color, tds.toInt());
+
+
   }
 
-  if (SLP.L == 0) SLP.L = -1;
 
+
+
+
+  if (SLP.L == 0) SLP.L = -1;
 }
 
 
-void KeepCube::setLEDpattern(int L, int P, int T, int D, String C) {
-  SLP = {L, P, T, D, C};
+void KeepCube::setLEDpattern(int L, String C, String T) {
+  C += ",";
+  T += ",";
+  SLP = {L, C, T};
 }
 
 
